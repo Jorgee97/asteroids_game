@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List
+from random import randrange
 
 import pygame
 from pygame.locals import *
@@ -22,14 +22,25 @@ class Game:
         self.game_display = pygame.display.set_mode((width, height))
         pygame.display.set_caption('Asteroids')
 
-        self.spaceship: SpaceShip = SpaceShip(x=self.width // 2, y=self.height - 20 * 2, size=20, img=None)
+        self.spaceship: SpaceShip = SpaceShip(x=self.width // 2, y=self.height - 20 * 2)
         self.ship_can_shoot = False
+        self.total_asteroids = 5
+        self.many_asteroids = 5
 
-        self.asteroids: List[Asteroid] = [Asteroid(), Asteroid(), Asteroid()]
+        self.asteroids = pygame.sprite.Group()
     
     def draw_asteroids(self):
+        asteroids_list = []
+        for _ in range(0, self.many_asteroids):
+            asteroids_list.append(Asteroid())
+            self.many_asteroids -= 1
+
+        self.asteroids.add(asteroids_list)
         for asteroid in self.asteroids:
             asteroid.draw(self.game_display)
+
+        if len(self.asteroids) < self.total_asteroids:
+            self.asteroids.add(Asteroid())
 
     def move_asteroids(self):
         for asteroid in self.asteroids:
@@ -40,9 +51,10 @@ class Game:
             asteroid.check_collision(self.spaceship.bullets, self.spaceship)
 
     def check_asteroid_boundaries(self):
-        for asteroid in self.asteroids[:]:
+        for asteroid in self.asteroids:
             if asteroid.y > self.height:
                 self.asteroids.remove(asteroid)
+                self.asteroids.add(Asteroid())
 
     def clear_display(self):
         self.game_display.fill((255, 255, 255))
@@ -75,6 +87,7 @@ class Game:
         self.draw_asteroids()
         self.move_asteroids()
         self.check_asteroid_collision()
+        self.check_asteroid_boundaries()
 
         pygame.display.update()
 

@@ -1,4 +1,5 @@
 import pygame
+import os
 from entities.entity import Entity, Movement
 
 
@@ -14,18 +15,19 @@ class Bullet(Entity):
 
 
 class SpaceShip(Entity):
-    def __init__(self, x, y, size, img=None):
+    def __init__(self, x, y, size=64):
         super().__init__(x, y, size)
-        self.img = img
+        self.img = pygame.image.load(os.path.join('assets', 'ship.png'))
+        self.img = pygame.transform.scale(self.img, (64, 64))
         self.life = 100
+        self.mask = pygame.mask.from_surface(self.img)
         self.bullets = []
 
     def draw(self, game_display):
-        pygame.draw.rect(game_display, (255, 0, 0), self.get_rect())
+        game_display.blit(self.img, (self.x, self.y))
 
     def shoot(self, game_display):
-        self.bullets.append(Bullet(self.x, self.y - self.size))
-        self.bullets.append(Bullet(self.x + self.size - 7, self.y - self.size))
+        self.bullets.append(Bullet(self.x + (self.size // 2) - 2, self.y))
 
         for bullet in self.bullets:
             pygame.draw.rect(game_display, (255, 255, 255), bullet.get_rect())
