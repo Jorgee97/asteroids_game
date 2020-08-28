@@ -1,32 +1,36 @@
 from typing import List
+import os
 import pygame
 from random import randrange
 
-from entities.entity import Movement
 
-
-class Asteroid:
-    def __init__(self, img=None):
-        self.x = self.random_position()
-        self.y = self.random_position()
-        self.life = 100
+class Asteroid(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
         self.size = self.define_random_size()
-        self.img = img
+        self.x = self.random_position()
+        self.y = self.random_position(is_x=False)
+        self.life = 100
+        self.img = pygame.image.load(os.path.join('assets', 'asteroid.png'))
+        self.img = pygame.transform.scale(self.img, (self.size[0], self.size[1]))
+
+        self.rect = self.get_rect()
 
     @staticmethod
     def define_random_size() -> List:
-        return [round(randrange(10, 50)), round(randrange(10, 50))]
+        return [round(randrange(20, 100)), round(randrange(20, 100))]
 
-    @staticmethod
-    def random_position() -> int:
-        return round(randrange(0, 400))
+    def random_position(self, is_x=True) -> int:
+        if is_x:
+            return round(randrange(100, 600 - self.size[0]))
+        else:
+            return round(randrange(-250, 100 - self.size[0]))
 
     def draw(self, game_display):
-        pygame.draw.rect(game_display, (0, 0, 255), self.get_rect())
+        game_display.blit(self.img, (self.x, self.y))
 
     def explode(self):
-        self.x = 0
-        self.y = 850
+        self.kill()
 
     def move(self, x, y):
         self.x += x
@@ -47,6 +51,11 @@ class Asteroid:
                 # TODO: find better way to handle the life decreasing of the ship
                 spaceship.move(0, 10)
                 return
+        
+        if self.x > 600:
+            self.move(-10, 0)
+        if self.x < 0:
+            self.move(1, 1)
 
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.size[0], self.size[1])
