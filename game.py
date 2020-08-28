@@ -1,10 +1,12 @@
 import os
 import sys
+from typing import List
 
 import pygame
 from pygame.locals import *
 
 from entities.entity import Movement
+from entities.asteroid import Asteroid
 from entities.space_ship import SpaceShip
 
 
@@ -22,6 +24,25 @@ class Game:
 
         self.spaceship: SpaceShip = SpaceShip(x=self.width // 2, y=self.height - 20 * 2, size=20, img=None)
         self.ship_can_shoot = False
+
+        self.asteroids: List[Asteroid] = [Asteroid(), Asteroid(), Asteroid()]
+    
+    def draw_asteroids(self):
+        for asteroid in self.asteroids:
+            asteroid.draw(self.game_display)
+
+    def move_asteroids(self):
+        for asteroid in self.asteroids:
+            asteroid.move(0, 1)
+
+    def check_asteroid_collision(self):
+        for asteroid in self.asteroids:
+            asteroid.check_collision(self.spaceship.bullets, self.spaceship)
+
+    def check_asteroid_boundaries(self):
+        for asteroid in self.asteroids[:]:
+            if asteroid.y > self.height:
+                self.asteroids.remove(asteroid)
 
     def clear_display(self):
         self.game_display.fill((255, 255, 255))
@@ -46,7 +67,15 @@ class Game:
         self.spaceship.draw(self.game_display)
         self.spaceship.track_bullets(self.game_display)
         self.movement(pygame.key.get_pressed())
+        self.spaceship.boundaries_check(self.width, self.height)
         self.shooting()
+        print(self.spaceship.life)
+
+        # Asteroids
+        self.draw_asteroids()
+        self.move_asteroids()
+        self.check_asteroid_collision()
+
         pygame.display.update()
 
     def game_loop(self):

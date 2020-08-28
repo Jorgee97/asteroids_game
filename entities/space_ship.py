@@ -17,6 +17,7 @@ class SpaceShip(Entity):
     def __init__(self, x, y, size, img=None):
         super().__init__(x, y, size)
         self.img = img
+        self.life = 100
         self.bullets = []
 
     def draw(self, game_display):
@@ -30,13 +31,23 @@ class SpaceShip(Entity):
             pygame.draw.rect(game_display, (255, 255, 255), bullet.get_rect())
 
     def track_bullets(self, game_display):
-        print(len(self.bullets))
         for bullet in self.bullets:
             bullet.move(0, -10)
             pygame.draw.rect(game_display, (255, 255, 255), bullet.get_rect())
 
             if bullet.y < 0:
                 self.bullets.remove(bullet)
+
+    def boundaries_check(self, max_x, max_y):
+        if self.x > max_x - self.size:
+            self.x = max_x - self.size
+        if self.x < 0:
+            self.x = 0
+
+        if self.y < 0:
+            self.y = 0
+        if self.y > max_y - self.size:
+            self.y = max_y - self.size
 
     def move_ship(self, movement: Movement):
         self.x += movement.value[0]
