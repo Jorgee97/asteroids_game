@@ -11,6 +11,7 @@ from entities.space_ship import SpaceShip
 
 
 class Game:
+    pygame.mixer.pre_init(44100, -16, 2, 512)
     pygame.init()
 
     def __init__(self, width, height):
@@ -28,7 +29,7 @@ class Game:
         self.many_asteroids = 5
 
         self.asteroids = pygame.sprite.Group()
-    
+
     def draw_asteroids(self):
         asteroids_list = []
         for _ in range(0, self.many_asteroids):
@@ -44,11 +45,11 @@ class Game:
 
     def move_asteroids(self):
         for asteroid in self.asteroids:
-            asteroid.move(0, 1)
+            asteroid.move()
 
     def check_asteroid_collision(self):
         for asteroid in self.asteroids:
-            asteroid.check_collision(self.spaceship.bullets, self.spaceship)
+            asteroid.check_collision(self.spaceship.bullets, self.spaceship, self.asteroids)
 
     def check_asteroid_boundaries(self):
         for asteroid in self.asteroids:
@@ -78,10 +79,12 @@ class Game:
     def render(self):
         self.spaceship.draw(self.game_display)
         self.spaceship.track_bullets(self.game_display)
+        self.spaceship.draw_health(self.game_display)
+        self.spaceship.draw_score(self.game_display, self.width)
+        self.spaceship.check_collisions(self.asteroids)
         self.movement(pygame.key.get_pressed())
         self.spaceship.boundaries_check(self.width, self.height)
         self.shooting()
-        print(self.spaceship.life)
 
         # Asteroids
         self.draw_asteroids()
