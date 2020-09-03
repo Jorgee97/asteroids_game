@@ -40,6 +40,7 @@ class SpaceShip(Entity, pygame.sprite.Sprite):
         self.rect.topleft = self.x, self.y
 
         self.shoot_sound = pygame.mixer.Sound(os.path.join('assets', 'sounds', 'shoot.wav'))
+        self.shoot_sound.set_volume(0.2)
 
     def draw(self, game_display):
         game_display.blit(self.img, (self.x, self.y))

@@ -1,6 +1,4 @@
-import os
 import sys
-from random import randrange
 
 import pygame
 from pygame.locals import *
@@ -8,6 +6,27 @@ from pygame.locals import *
 from entities.entity import Movement
 from entities.asteroid import Asteroid
 from entities.space_ship import SpaceShip
+from entities.star import Star
+
+
+class GameManager:
+    def __init__(self, player: SpaceShip):
+        self.player = player
+        self.level = 1
+        self.total_asteroids = 5
+        self.many_asteroids = 5
+        self.increment_asteroid_per_level = 1
+        self.increment_after_score_gt_than = 100
+
+    def increment_level(self):
+        if self.player.score > self.increment_after_score_gt_than:
+            self.increment_after_score_gt_than += 100
+            self.level = 2
+            self.total_asteroids += 1
+            self.player.health += round(self.player.health * 0.1)
+
+    def game_over(self) -> bool:
+        return self.player.health <= 0
 
 
 class Game:
@@ -15,8 +34,8 @@ class Game:
     pygame.init()
 
     def __init__(self, width, height):
-        picture = pygame.image.load(os.path.join('img', 'bg_space.jpg'))
-        self.bg = pygame.transform.scale(picture, (width, height))
+        # picture = pygame.image.load(os.path.join('img', 'bg_space.jpg'))
+        # self.bg = pygame.transform.scale(picture, (width, height))
 
         self.width = width
         self.height = height
@@ -25,22 +44,20 @@ class Game:
 
         self.spaceship: SpaceShip = SpaceShip(x=self.width // 2, y=self.height - 20 * 2)
         self.ship_can_shoot = False
-        self.total_asteroids = 5
-        self.many_asteroids = 5
 
+        self.game_manager = GameManager(self.spaceship)
+
+        # Initialize game components
         self.asteroids = pygame.sprite.Group()
+        self.asteroids.add([Asteroid() for _ in range(self.game_manager.many_asteroids)])
+        self.stars = pygame.sprite.Group()
+        self.stars.add([Star() for _ in range(100)])
 
     def draw_asteroids(self):
-        asteroids_list = []
-        for _ in range(0, self.many_asteroids):
-            asteroids_list.append(Asteroid())
-            self.many_asteroids -= 1
-
-        self.asteroids.add(asteroids_list)
         for asteroid in self.asteroids:
             asteroid.draw(self.game_display)
 
-        if len(self.asteroids) < self.total_asteroids:
+        if len(self.asteroids) < self.game_manager.total_asteroids:
             self.asteroids.add(Asteroid())
 
     def move_asteroids(self):
@@ -57,9 +74,18 @@ class Game:
                 self.asteroids.remove(asteroid)
                 self.asteroids.add(Asteroid())
 
+    def draw_bg_stars(self):
+        for start in self.stars:
+            start.draw(self.game_display)
+
+    def check_stars_boundaries(self):
+        for star in self.stars:
+            star.boundaries_check(self.height, self.stars)
+        if len(self.stars) < 100:
+            self.stars.add([Star() for _ in range(20)])
+
     def clear_display(self):
-        self.game_display.fill((255, 255, 255))
-        self.game_display.blit(self.bg, (0, 0))
+        self.game_display.fill((0, 0, 0))
 
     def movement(self, key_pressed):
         if key_pressed[ord('w')]:
@@ -77,6 +103,10 @@ class Game:
             self.ship_can_shoot = False
 
     def render(self):
+        # Background
+        self.draw_bg_stars()
+        self.check_stars_boundaries()
+
         self.spaceship.draw(self.game_display)
         self.spaceship.track_bullets(self.game_display)
         self.spaceship.draw_health(self.game_display)
@@ -91,6 +121,9 @@ class Game:
         self.move_asteroids()
         self.check_asteroid_collision()
         self.check_asteroid_boundaries()
+
+        # Level Checking and Increment
+        self.game_manager.increment_level()
 
         pygame.display.update()
 
@@ -109,7 +142,7 @@ class Game:
                 if event.type == KEYUP:
                     if event.key == pygame.K_SPACE:
                         self.ship_can_shoot = False
-
+            # TODO: validate user's health and if game_over proceed to pause game and ask for restart
             self.clear_display()
             self.render()
             clock.tick(fps)

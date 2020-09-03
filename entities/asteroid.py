@@ -62,9 +62,20 @@ class Asteroid(pygame.sprite.Sprite):
                         spaceship.score += 10
                         self.explode()
 
-        if hits := pygame.sprite.spritecollide(self, asteroids, False, pygame.sprite.collide_mask):
-            for h in hits[1:]:
-                h.randomize_constant_movement_on_collision()
+        for asteroid in asteroids:
+            if self != asteroid and pygame.sprite.collide_mask(self, asteroid):
+                if asteroid.rect.left:
+                    asteroid.constant_x_movement = -2
+                    self.constant_x_movement = 2
+                if asteroid.rect.right:
+                    asteroid.constant_x_movement = 2
+                    self.constant_x_movement = -2
+                if asteroid.rect.bottom:
+                    asteroid.constant_y_movement = -2
+                    self.constant_y_movement = 2
+                if asteroid.rect.top:
+                    asteroid.constant_y_movement = 2
+                    self.constant_y_movement = -2
 
         if self.x + self.size[0] > 600:
             self.constant_x_movement = -2
