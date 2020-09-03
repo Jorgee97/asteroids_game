@@ -34,9 +34,6 @@ class Game:
     pygame.init()
 
     def __init__(self, width, height):
-        # picture = pygame.image.load(os.path.join('img', 'bg_space.jpg'))
-        # self.bg = pygame.transform.scale(picture, (width, height))
-
         self.width = width
         self.height = height
         self.game_display = pygame.display.set_mode((width, height))
